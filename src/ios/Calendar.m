@@ -31,7 +31,7 @@
     } else { // we're on iOS 5 or older
         accessGranted = YES;
     }
-    
+
     if (accessGranted) {
         self.eventStore = eventStore;
     }
@@ -43,24 +43,24 @@
                        calendar: (EKCalendar *) calendar {
     NSString *callbackId = command.callbackId;
     NSDictionary* options = [command.arguments objectAtIndex:0];
-    
+
     NSString* title      = [options objectForKey:@"title"];
     NSString* location   = [options objectForKey:@"location"];
     NSString* notes      = [options objectForKey:@"notes"];
     NSNumber* startTime  = [options objectForKey:@"startTime"];
     NSNumber* endTime    = [options objectForKey:@"endTime"];
-    
+
     NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
     NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    
+
     NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
-    
+
     EKEvent *myEvent = [EKEvent eventWithEventStore: self.eventStore];
     myEvent.title = title;
     myEvent.location = location;
     myEvent.notes = notes;
     myEvent.startDate = myStartDate;
-    
+
     int duration = _endInterval - _startInterval;
     int moduloDay = duration % (60*60*24);
     if (moduloDay == 0) {
@@ -70,14 +70,14 @@
         myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
     }
     myEvent.calendar = calendar;
-    
+
     // TODO base on passed alarm
     EKAlarm *reminder = [EKAlarm alarmWithRelativeOffset:-1*60*60];
     [myEvent addAlarm:reminder];
-    
+
     NSError *error = nil;
     [self.eventStore saveEvent:myEvent span:EKSpanThisEvent error:&error];
-    
+
     if (error) {
         CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.userInfo.description];
         [self writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
@@ -92,7 +92,7 @@
                               calendar: (EKCalendar *) calendar {
     NSString *callbackId = command.callbackId;
     NSDictionary* options = [command.arguments objectAtIndex:0];
-    
+
     NSString* title      = [options objectForKey:@"title"];
     NSString* location   = [options objectForKey:@"location"];
     NSString* notes      = [options objectForKey:@"notes"];
@@ -102,18 +102,18 @@
     NSDictionary* calOptions = [options objectForKey:@"options"];
     NSNumber* firstReminderMinutes = [calOptions objectForKey:@"firstReminderMinutes"];
     NSNumber* secondReminderMinutes = [calOptions objectForKey:@"secondReminderMinutes"];
-    
+
     NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
     NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    
+
     NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
-    
+
     EKEvent *myEvent = [EKEvent eventWithEventStore: self.eventStore];
     myEvent.title = title;
     myEvent.location = location;
     myEvent.notes = notes;
     myEvent.startDate = myStartDate;
-    
+
     int duration = _endInterval - _startInterval;
     int moduloDay = duration % (60*60*24);
     if (moduloDay == 0) {
@@ -123,20 +123,20 @@
         myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
     }
     myEvent.calendar = calendar;
-    
+
     if (firstReminderMinutes != (id)[NSNull null]) {
         EKAlarm *reminder = [EKAlarm alarmWithRelativeOffset:-1*firstReminderMinutes.intValue*60];
         [myEvent addAlarm:reminder];
     }
-    
+
     if (secondReminderMinutes != (id)[NSNull null]) {
         EKAlarm *reminder = [EKAlarm alarmWithRelativeOffset:-1*secondReminderMinutes.intValue*60];
         [myEvent addAlarm:reminder];
     }
-    
+
     NSError *error = nil;
     [self.eventStore saveEvent:myEvent span:EKSpanThisEvent error:&error];
-    
+
     if (error) {
         CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.userInfo.description];
         [self writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
@@ -150,33 +150,33 @@
 -(void)modifyEventWithCalendar:(CDVInvokedUrlCommand*)command
                       calendar: (EKCalendar *) calendar {
     NSString *callbackId = command.callbackId;
-    
+
     NSDictionary* options = [command.arguments objectAtIndex:0];
-    
+
     NSString* title      = [options objectForKey:@"title"];
     NSString* location   = [options objectForKey:@"location"];
     NSString* notes      = [options objectForKey:@"notes"];
     NSNumber* startTime  = [options objectForKey:@"startTime"];
     NSNumber* endTime    = [options objectForKey:@"endTime"];
-    
+
     NSString* ntitle     = [options objectForKey:@"newTitle"];
     NSString* nlocation  = [options objectForKey:@"newLocation"];
     NSString* nnotes     = [options objectForKey:@"newNotes"];
     NSNumber* nstartTime = [options objectForKey:@"newStartTime"];
     NSNumber* nendTime   = [options objectForKey:@"newEndTime"];
-    
+
     NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
     NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    
+
     NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
     NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-    
+
     NSDateFormatter *df = [[NSDateFormatter alloc] init];
     [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-    
+
     // Find matches
     NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendar:calendar];
-    
+
     if (matchingEvents.count == 1) {
         // Presume we have to have an exact match to modify it!
         // Need to load this event from an EKEventStore so we can edit it
@@ -198,11 +198,11 @@
             NSTimeInterval _nendInterval = [nendTime doubleValue] / 1000; // strip millis
             theEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_nendInterval];
         }
-        
+
         // Now save the new details back to the store
         NSError *error = nil;
         [self.eventStore saveEvent:theEvent span:EKSpanThisEvent error:&error];
-        
+
         // Check error code + return result
         if (error) {
             CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.userInfo.description];
@@ -221,29 +221,29 @@
 
 - (void)deleteEventFromCalendar:(CDVInvokedUrlCommand*)command
                        calendar: (EKCalendar *) calendar {
-    
+
     NSString *callbackId = command.callbackId;
     NSDictionary* options = [command.arguments objectAtIndex:0];
-    
+
     NSString* title      = [options objectForKey:@"title"];
     NSString* location   = [options objectForKey:@"location"];
     NSString* notes      = [options objectForKey:@"notes"];
     NSNumber* startTime  = [options objectForKey:@"startTime"];
     NSNumber* endTime    = [options objectForKey:@"endTime"];
-    
+
     NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
     NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    
+
     NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
     NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-    
+
     NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendar:calendar];
-    
+
     NSError *error = NULL;
     for (EKEvent * event in matchingEvents) {
         [self.eventStore removeEvent:event span:EKSpanThisEvent error:&error];
     }
-    
+
     if (error) {
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error.userInfo.description];
         [self writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
@@ -259,7 +259,7 @@
                        startDate: (NSDate *)startDate
                          endDate: (NSDate *)endDate
                         calendar: (EKCalendar *) calendar {
-    
+
     // Build up a predicateString - this means we only query a parameter if we actually had a value in it
     NSMutableString *predicateString= [[NSMutableString alloc] initWithString:@""];
     if (title != (id)[NSNull null] && title.length > 0) {
@@ -271,15 +271,15 @@
     if (notes != (id)[NSNull null] && notes.length > 0) {
         [predicateString appendString:[NSString stringWithFormat:@" AND notes == '%@'", notes]];
     }
-    
+
     NSPredicate *matches = [NSPredicate predicateWithFormat:predicateString];
-    
+
     NSArray *calendarArray = [NSArray arrayWithObject:calendar];
-    
+
     NSArray *datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendarArray]];
-    
+
     NSArray *matchingEvents = [datedEvents filteredArrayUsingPredicate:matches];
-    
+
     return matchingEvents;
 }
 
@@ -301,7 +301,7 @@
             return source;
         }
     }
-    
+
     // ok, not found.. so it's a local calendar
     for (EKSource *source in self.eventStore.sources) {
         if (source.sourceType == EKSourceTypeLocal) {
@@ -318,7 +318,7 @@
     NSArray * calendars = self.eventStore.calendars;
     // TODO when iOS 5 support is no longer needed, change the line above by the line below (and a few other places as well)
     // NSArray * calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
-    
+
     NSMutableArray *finalResults = [[NSMutableArray alloc] initWithCapacity:calendars.count];
     for (EKCalendar *thisCalendar in calendars){
         NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
@@ -327,7 +327,7 @@
                                       nil];
         [finalResults addObject:entry];
     }
-    
+
     CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:finalResults];
     [self writeJavascript:[result toSuccessCallbackString:callbackId]];
 }
@@ -345,7 +345,7 @@
 }
 
 - (void)listEventsInRange:(CDVInvokedUrlCommand*)command {
-    
+
 }
 
 - (void)createEventWithOptions:(CDVInvokedUrlCommand*)command {
@@ -428,29 +428,149 @@
         NSArray *calendarArray = [NSArray arrayWithObject:calendar];
         NSPredicate *fetchCalendarEvents = [eventStore predicateForEventsWithStartDate:[NSDate date] endDate:endDate calendars:calendarArray];
         NSArray *matchingEvents = [eventStore eventsMatchingPredicate:fetchCalendarEvents];
-        
+
         NSMutableArray *finalResults = [[NSMutableArray alloc] initWithCapacity:matchingEvents.count];
-        
+
         NSDateFormatter *df = [[NSDateFormatter alloc] init];
         [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-        
-        // Stringify the results
+
+        // Stringify the results - Cordova can't deal with Obj-C objects
         for (EKEvent * event in matchingEvents) {
-            NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                          event.title, @"title",
-                                          [df stringFromDate:event.startDate], @"startDate",
-                                          [df stringFromDate:event.endDate], @"endDate",
-                                          nil];
-            // optional fields
-            if (event.location != nil) {
-                [entry setObject:event.location forKey:@"location"];
+            //STEROIDSIFIED TOTALLY
+            NSMutableDictionary *betterEvent = [NSMutableDictionary dictionary];
+
+            if (event.availability) {
+                switch (event.availability) {
+                    case EKEventAvailabilityBusy:
+                        [betterEvent setObject: @"busy" forKey:@"availability"];
+                        break;
+                    case EKEventAvailabilityFree:
+                        [betterEvent setObject: @"free" forKey:@"availability"];
+                        break;
+                    case EKEventAvailabilityTentative:
+                        [betterEvent setObject: @"tentative" forKey:@"availability"];
+                        break;
+                    case EKEventAvailabilityUnavailable:
+                        [betterEvent setObject: @"unavailable" forKey:@"availability"];
+                        break;
+                    default:
+                        [betterEvent setObject: @"notSupported" forKey:@"availability"];
+                        break;
+                }
             }
-            if (event.notes != nil) {
-                [entry setObject:event.notes forKey:@"message"];
+
+            if (event.calendarItemExternalIdentifier) {
+                [betterEvent setObject:event.calendarItemExternalIdentifier forKey:@"calendarItemExternalIdentifier"];
             }
-            [finalResults addObject:entry];
+
+            if (event.startDate) {
+                NSTimeInterval ti = [event.startDate timeIntervalSince1970];
+                NSString *intervalString = [NSString stringWithFormat:@"%f", ti];
+
+                [betterEvent setObject: [df stringFromDate:event.startDate] forKey:@"startDate"];
+                [betterEvent setObject: intervalString forKey:@"startDateEpoch" ];
+            }
+
+            if (event.endDate) {
+                NSTimeInterval ti = [event.startDate timeIntervalSince1970];
+                NSString *intervalString = [NSString stringWithFormat:@"%f", ti];
+
+                [betterEvent setObject:[df stringFromDate:event.endDate] forKey:@"endDate"];
+                [betterEvent setObject: intervalString forKey:@"endDateEpoch" ];
+            }
+
+            if (event.allDay) {
+                [betterEvent setObject:@"true" forKey:@"allDay"];
+            } else {
+                [betterEvent setObject:@"false" forKey:@"allDay"];
+            }
+
+            if (event.isDetached) {
+                [betterEvent setObject:@"true" forKey:@"isDetached"];
+            } else {
+                [betterEvent setObject:@"false" forKey:@"isDetached"];
+            }
+
+            if (event.organizer) {
+                [betterEvent setObject:[event.organizer name] forKey:@"organizer"];
+            }
+
+            if (event.status) {
+                switch (event.status) {
+                    case EKEventStatusConfirmed:
+                        [betterEvent setObject: @"confirmed" forKey:@"status"];
+                        break;
+                    case EKEventStatusTentative:
+                        [betterEvent setObject: @"tentative" forKey:@"status"];
+                        break;
+                    case EKEventStatusCanceled:
+                        [betterEvent setObject: @"canceled" forKey:@"status"];
+                        break;
+                    default:
+                        [betterEvent setObject: @"none" forKey:@"status"];
+                        break;
+                }
+            }
+
+            if (event.calendar) {
+                [betterEvent setObject:[event.calendar title] forKey:@"calendar"];
+                [betterEvent setObject:[event.calendar calendarIdentifier] forKey:@"calendarIdentifier"];
+            }
+
+            if (event.title) {
+                [betterEvent setObject:event.title forKey:@"title"];
+            }
+
+            if (event.location) {
+                [betterEvent setObject:event.location forKey:@"location"];
+            }
+
+            if (event.creationDate) {
+                [betterEvent setObject:[df stringFromDate:event.creationDate] forKey:@"creationDate"];
+            }
+
+            if (event.lastModifiedDate) {
+                [betterEvent setObject:[df stringFromDate:event.lastModifiedDate] forKey:@"lastModifiedDate"];
+            }
+
+            if (event.timeZone) {
+                [betterEvent setObject:[event.timeZone abbreviation] forKey:@"timezone"];
+            }
+
+            if (event.URL) {
+                [betterEvent setObject:[event.URL absoluteString] forKey:@"URL"];
+            }
+
+            if (event.notes) {
+                [betterEvent setObject:event.notes forKey:@"message"];
+            }
+
+            if (event.attendees) {
+                NSMutableArray *betterAttendees = [NSMutableArray array];
+
+                for (EKParticipant *attendee in event.attendees) {
+                    NSMutableDictionary * betterAttendee = [NSMutableDictionary dictionary];
+                    if (attendee.name) {
+                        [betterAttendee setValue:attendee.name forKey:@"name"];
+                    } else {
+                        [betterAttendee setValue:@"" forKey:@"name"];
+                    }
+
+                    if ([attendee URL]) {
+                        [betterAttendee setValue:[[attendee URL] absoluteString] forKey:@"url"];
+                    } else {
+                        [betterAttendee setValue:@"" forKey:@"url"];
+                    }
+
+                    [betterAttendees addObject:betterAttendee];
+                }
+
+                [betterEvent setObject:betterAttendees forKey:@"attendees"];
+            }
+
+            [finalResults addObject:betterEvent];
         }
-        
+
         CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:finalResults];
         [self writeJavascript:[result toSuccessCallbackString:callbackId]];
     }
@@ -459,33 +579,33 @@
 
 -(void)findEvent:(CDVInvokedUrlCommand*)command {
     NSString *callbackId = command.callbackId;
-    
+
     NSDictionary* options = [command.arguments objectAtIndex:0];
-    
+
     NSString* title      = [options objectForKey:@"title"];
     NSString* location   = [options objectForKey:@"location"];
     NSString* notes      = [options objectForKey:@"notes"];
     NSNumber* startTime  = [options objectForKey:@"startTime"];
     NSNumber* endTime    = [options objectForKey:@"endTime"];
-    
+
     NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
     NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    
+
     NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
     NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-    
+
     NSDateFormatter *df = [[NSDateFormatter alloc] init];
     [df setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-    
+
     EKCalendar* calendar = self.eventStore.defaultCalendarForNewEvents;
     if (calendar == nil) {
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No default calendar found. Is access to the Calendar blocked for this app?"];
         [self writeJavascript:[result toErrorCallbackString:command.callbackId]];
     } else {
         NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendar:calendar];
-        
+
         NSMutableArray *finalResults = [[NSMutableArray alloc] initWithCapacity:matchingEvents.count];
-        
+
         // Stringify the results - Cordova can't deal with Obj-C objects
         for (EKEvent * event in matchingEvents) {
             NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
@@ -496,7 +616,7 @@
                                           [df stringFromDate:event.endDate], @"endDate", nil];
             [finalResults addObject:entry];
         }
-        
+
         CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:finalResults];
         [self writeJavascript:[result toSuccessCallbackString:callbackId]];
     }
@@ -531,7 +651,7 @@
             CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Calendar could not be created. Is access to the Calendar blocked for this app?"];
             [self writeJavascript:[result toErrorCallbackString:callbackId]];
         }
-        
+
     } else {
         // ok, it already exists
         CDVPluginResult* result = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:@"OK, Calendar already exists"];
@@ -552,9 +672,9 @@
     NSString *callbackId = command.callbackId;
     NSDictionary* options = [command.arguments objectAtIndex:0];
     NSString* calendarName = [options objectForKey:@"calendarName"];
-    
+
     EKCalendar *thisCalendar = [self findEKCalendar:calendarName];
-    
+
     if (thisCalendar == nil) {
         CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
         [self writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
