@@ -472,7 +472,7 @@
             }
 
             if (event.endDate) {
-                NSTimeInterval ti = [event.startDate timeIntervalSince1970];
+                NSTimeInterval ti = [event.endDate timeIntervalSince1970];
                 NSString *intervalString = [NSString stringWithFormat:@"%f", ti];
 
                 [betterEvent setObject:[df stringFromDate:event.endDate] forKey:@"endDate"];
