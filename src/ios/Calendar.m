@@ -319,12 +319,20 @@
     // TODO when iOS 5 support is no longer needed, change the line above by the line below (and a few other places as well)
     // NSArray * calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
 
+    NSString *defaultCalendarIdentifier = self.eventStore.defaultCalendarForNewEvents.calendarIdentifier;
+
     NSMutableArray *finalResults = [[NSMutableArray alloc] initWithCapacity:calendars.count];
     for (EKCalendar *thisCalendar in calendars){
-        NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                      thisCalendar.calendarIdentifier, @"id",
-                                      thisCalendar.title, @"name",
-                                      nil];
+
+        BOOL isDefault = thisCalendar.calendarIdentifier == defaultCalendarIdentifier;
+        NSNumber *boolNumber = [NSNumber numberWithBool:isDefault];
+
+        NSMutableDictionary *entry = [NSMutableDictionary dictionary];
+
+        [entry setObject: thisCalendar.calendarIdentifier forKey:@"id" ];
+        [entry setObject: thisCalendar.title forKey:@"name" ];
+        [entry setObject: boolNumber forKey:@"defaultCalendarForNewEvents" ];
+
         [finalResults addObject:entry];
     }
 
