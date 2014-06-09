@@ -189,6 +189,20 @@ Calendar.prototype.listCalendars = function (successCallback, errorCallback) {
   cordova.exec(successCallback, errorCallback, "Calendar", "listCalendars", []);
 };
 
+Calendar.prototype.initialize = function(successCallback, errorCallback) {
+  if (typeof errorCallback != "function")  {
+      console.log("calendarPlugin.createEvent failure: errorCallback parameter must be a function");
+      return;
+  }
+
+  if (typeof successCallback != "function") {
+      console.log("calendarPlugin.createEvent failure: successCallback parameter must be a function");
+      return;
+  }
+
+  cordova.exec(successCallback, errorCallback, "Calendar", "init", []);
+}
+
 Calendar.install = function () {
   if (!window.plugins) {
     window.plugins = {};

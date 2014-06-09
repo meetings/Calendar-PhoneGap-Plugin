@@ -6,14 +6,18 @@
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 @implementation Calendar
-@synthesize eventStore;
+@synthesize eventStore, hasAccess;
 
 #pragma mark Initialisation functions
 
-- (CDVPlugin*) initWithWebView:(UIWebView*)theWebView {
+- (CDVPlugin*) initWithWebView:(UIWebView*)theWebView
+{
     self = (Calendar*)[super initWithWebView:theWebView];
     if (self) {
-        [self initEventStoreWithCalendarCapabilities];
+        //[self setup];
+
+        //STEROIDSIFIED
+        // [self initEventStoreWithCalendarCapabilities];
     }
     return self;
 }
@@ -29,11 +33,15 @@
         }];
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     } else { // we're on iOS 5 or older
+        self.hasAccess = true;
         accessGranted = YES;
     }
 
     if (accessGranted) {
+        self.hasAccess = true;
         self.eventStore = eventStore;
+    } else {
+        self.hasAccess = false;
     }
 }
 
@@ -698,6 +706,22 @@
             CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
             [self writeJavascript:[result toSuccessCallbackString:callbackId]];
         }
+    }
+}
+
+//STEROIDSIFIED
+- (void)init:(CDVInvokedUrlCommand *)command {
+    NSString *callbackId = command.callbackId;
+
+    [self initEventStoreWithCalendarCapabilities];
+
+    if (self.hasAccess) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self writeJavascript:[pluginResult toSuccessCallbackString:callbackId]];
+    } else {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"Access not granted"];
+        [self writeJavascript:[pluginResult toErrorCallbackString:callbackId]];
     }
 }
 

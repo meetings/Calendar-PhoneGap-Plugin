@@ -6,6 +6,7 @@
 @interface Calendar : CDVPlugin
 
 @property (nonatomic, retain) EKEventStore* eventStore;
+@property (nonatomic) bool hasAccess;
 
 - (void)initEventStoreWithCalendarCapabilities;
 
@@ -33,5 +34,8 @@
 
 - (void)deleteEvent:(CDVInvokedUrlCommand*)command;
 - (void)deleteEventFromNamedCalendar:(CDVInvokedUrlCommand*)command;
+
+//STEROIDSIFIED
+- (void)init:(CDVInvokedUrlCommand *)command;
 
 @end
