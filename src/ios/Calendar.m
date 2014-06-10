@@ -507,7 +507,7 @@
                 [betterEvent setObject:@"false" forKey:@"isDetached"];
             }
 
-            if (event.organizer) {
+            if (event.organizer && [event.organizer name]) {
                 [betterEvent setObject:[event.organizer name] forKey:@"organizer"];
             }
 
