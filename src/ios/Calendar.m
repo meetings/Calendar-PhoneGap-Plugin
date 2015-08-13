@@ -479,7 +479,6 @@
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:finalResults];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   }];
-    }];
 }
 
 - (void) listEventsInRange:(CDVInvokedUrlCommand*)command {
