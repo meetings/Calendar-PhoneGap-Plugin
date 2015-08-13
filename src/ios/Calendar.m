@@ -464,12 +464,15 @@
 - (void) listCalendars:(CDVInvokedUrlCommand*)command {
   [self.commandDelegate runInBackground: ^{
     NSArray * calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+    NSString *defaultCalendarIdentifier = self.eventStore.defaultCalendarForNewEvents.calendarIdentifier;
     NSMutableArray *finalResults = [[NSMutableArray alloc] initWithCapacity:calendars.count];
     for (EKCalendar *thisCalendar in calendars) {
       NSString *type = [[NSArray arrayWithObjects:@"Local", @"CalDAV", @"Exchange", @"Subscription", @"Birthday", @"Mail", nil] objectAtIndex:thisCalendar.type];
+      NSNumber *isDefault = [NSNumber numberWithBool:thisCalendar.calendarIdentifier == defaultCalendarIdentifier];
       NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                     thisCalendar.calendarIdentifier, @"id",
                                     thisCalendar.title, @"name",
+                                    isDefault, @"defaultCalendarForNewEvents",
                                     type, @"type",
                                     nil];
 
